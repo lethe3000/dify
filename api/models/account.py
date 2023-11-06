@@ -5,6 +5,8 @@ from flask_login import UserMixin
 from extensions.ext_database import db
 from sqlalchemy.dialects.postgresql import UUID
 
+from models.billing import Balance, Order
+
 
 class AccountStatus(str, enum.Enum):
     PENDING = 'pending'
@@ -98,6 +100,12 @@ class Account(UserMixin, db.Model):
         ai = db.Model
         return db.session.query(ai).filter(
             ai.account_id == self.id
+        ).all()
+
+    def get_orders(self) -> List[db.Model]:
+        return db.session.query(Order).filter(
+            Account.id == Order.account_id,
+            Order.account_id == self.id
         ).all()
 
 

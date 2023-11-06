@@ -18,6 +18,8 @@ from core.conversation_message_task import PubHandler
 from core.model_providers.error import LLMBadRequestError, LLMAPIUnavailableError, LLMAuthorizationError, LLMAPIConnectionError, \
     LLMRateLimitError, ProviderTokenNotInitError, QuotaExceededError, ModelCurrentlyNotSupportError
 from libs.helper import uuid_value
+from libs.login import login_required
+from services.billing_service import points_required
 from services.completion_service import CompletionService
 
 
@@ -83,6 +85,8 @@ class CompletionStopApi(InstalledAppResource):
 
 
 class ChatApi(InstalledAppResource):
+    @login_required
+    @points_required
     def post(self, installed_app):
         app_model = installed_app.app
         if app_model.mode != 'chat':

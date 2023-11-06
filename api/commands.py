@@ -27,6 +27,7 @@ from libs.rsa import generate_key_pair
 from models.account import InvitationCode, Tenant, TenantAccountJoin
 from models.dataset import Dataset, DatasetQuery, Document, DatasetCollectionBinding
 from models.model import Account, AppModelConfig, App
+from models.billing import Balance
 import secrets
 import base64
 
@@ -718,6 +719,25 @@ def migrate_default_input_to_dataset_query_variable(batch_size):
             pbar.update(len(data_batch))
 
 
+@click.command('charge', help='Charge to get point that used to chat')
+@click.option('--email', prompt=True, help='Email address of account to charge.')
+@click.option('--currency', prompt=True, type=float, help='money.')
+def charge(email, currency):
+    account = db.session.query(Account). \
+        filter(Account.email == email). \
+        one_or_none()
+    if not account:
+        click.echo(click.style('sorry. the account: [{}] not exist .'.format(email), fg='red'))
+        return
+
+    from services.billing_service import BillingService
+    balance_before = db.session.query(Balance).filter(Balance.account_id == account.id).first().point
+    BillingService.charge(account_id=account.id, currency=currency)
+    balance_after = db.session.query(Balance).filter(Balance.account_id == account.id).first().point
+    click.echo(click.style(f'Congratulations! You have {balance_after} points now({balance_before} before).',
+                           fg='green'))
+
+
 def register_commands(app):
     app.cli.add_command(reset_password)
     app.cli.add_command(reset_email)
@@ -731,3 +751,4 @@ def register_commands(app):
     app.cli.add_command(update_app_model_configs)
     app.cli.add_command(normalization_collections)
     app.cli.add_command(migrate_default_input_to_dataset_query_variable)
+    app.cli.add_command(charge)

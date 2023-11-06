@@ -14,6 +14,7 @@ from sqlalchemy import func
 
 from events.tenant_event import tenant_was_created
 from extensions.ext_redis import redis_client
+from services.billing_service import BillingService
 from services.errors.account import AccountLoginError, CurrentPasswordIncorrectError, LinkAccountIntegrateError, \
     TenantNotFound, AccountNotLinkTenantError, InvalidActionError, CannotOperateSelfError, MemberNotInTenantError, \
     RoleAlreadyAssignedError, NoPermissionError, AccountRegisterError, AccountAlreadyInTenantError
@@ -167,6 +168,9 @@ class AccountService:
 
         db.session.add(account)
         db.session.commit()
+
+        BillingService.create_balance(account.id)
+
         return account
 
     @staticmethod
@@ -561,3 +565,15 @@ class RegisterService:
 
             invitation = json.loads(data)
             return invitation
+
+    @staticmethod
+    def create_order(account, **kwargs):
+        """Update account fields"""
+        # account.last_login_at = datetime.utcnow()
+        # account.last_login_ip = get_remote_ip(request)
+        # db.session.add(account)
+        # db.session.commit()
+        # logging.info(f'Account {account.id} logged in successfully.')
+        from models.billing import Order
+
+        pass

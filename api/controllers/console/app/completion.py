@@ -23,6 +23,7 @@ from libs.helper import uuid_value
 from flask_restful import Resource, reqparse
 
 from services.completion_service import CompletionService
+from services.billing_service import points_required
 
 
 # define completion message api for user
@@ -104,6 +105,7 @@ class ChatMessageApi(Resource):
     @setup_required
     @login_required
     @account_initialization_required
+    @points_required
     def post(self, app_id):
         app_id = str(app_id)
 
